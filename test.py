@@ -1,6 +1,7 @@
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from peft import PeftModel
+import re
 
 # 基础模型和 LoRA adapter 路径
 base_model_name = "Qwen/Qwen1.5-0.5B"
@@ -23,34 +24,41 @@ tokenizer = AutoTokenizer.from_pretrained(lora_model_path)
 
 
 def predict_house_price(features_dict):
-    # 准备输入
-    prompt = "房屋特征: " + " ".join(
-        f"{k}:{v}" for k, v in features_dict.items()
-    ) + " 预测房价:"
-    
-    # 生成预测
+    prompt = (
+        "根据以下房屋特征预测房价:\n"
+        f"- 经度: {features_dict['经度']}\n"
+        f"- 纬度: {features_dict['纬度']}\n"
+        f"- 房龄中位数: {features_dict['房龄中位数']}年\n"
+        f"- 总房间数: {features_dict['总房间数']}\n"
+        f"- 总卧室数: {features_dict['总卧室数']}\n"
+        f"- 人口: {features_dict['人口']}\n"
+        f"- 家庭数: {features_dict['家庭数']}\n"
+        f"- 收入中位数: {features_dict['收入中位数']}\n"
+        "预测房价(美元):"
+    )
+    print("prompt：", prompt)
     inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
     outputs = model.generate(**inputs, max_new_tokens=8)
-    
-    # 解析输出
     prediction = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    predicted_value = prediction.split("预测房价:")[-1].strip()
-    
-    try:
-        return float(predicted_value)
-    except:
-        print(f"解析失败: {predicted_value}")
+    print("模型原始输出：", prediction)
+    # 用正则提取数字
+    match = re.search(r"预测房价.*?([0-9]+)", prediction)
+    if match:
+        return float(match.group(1))
+    else:
+        print(f"解析失败: {prediction}")
         return None
     
 # 测试示例
 test_case = {
-    "longitude": -118.24,
-    "latitude": 34.05,
-    "housing_median_age": 25.0,
-    "total_rooms": 2000.0,
-    "total_bedrooms": 400.0,
-    "population": 1200.0,
-    "households": 350.0,
-    "median_income": 4.5
+    "经度": -118.24,
+    "纬度": 34.05,
+    "房龄中位数": 25.0,
+    "总房间数": 2000.0,
+    "总卧室数": 400.0,
+    "人口": 1200.0,
+    "家庭数": 350.0,
+    "收入中位数": 4.5
 }
+
 print(f"预测结果: ${predict_house_price(test_case):,.0f}")
