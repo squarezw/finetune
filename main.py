@@ -119,7 +119,6 @@ training_args = TrainingArguments(
     logging_dir="./logs",
     logging_steps=10,
     save_strategy="epoch",
-    evaluation_strategy="no",
     fp16=True,
     push_to_hub=False,  # 设置为 True 如果你想上传到 Hugging Face Hub
 )
