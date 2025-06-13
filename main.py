@@ -89,17 +89,9 @@ def numerical_preprocess_function(examples):
     )
     
     # 标记化目标值
-    # with tokenizer.as_target_tokenizer():
-    #     labels = tokenizer(
-    #         responses,
-    #         max_length=32,
-    #         truncation=True,
-    #         padding="max_length",
-    #         return_tensors="pt"
-    #     )    
     labels = tokenizer(
         text_target=responses,
-        max_length=32,
+        max_length=512,
         truncation=True,
         padding="max_length",
         return_tensors="pt"
