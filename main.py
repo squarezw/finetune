@@ -13,7 +13,7 @@ print(f"transformers 版本: {transformers.__version__}")
 # 加载模型和分词器
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, TrainingArguments
 
-model_name = "Qwen/Qwen-0.5B"  # Qwen3 7B 模型
+model_name = "Qwen/Qwen1.5-0.5B"  # Qwen3 7B 模型
 
 # 配置 4-bit 量化以减少内存使用
 bnb_config = BitsAndBytesConfig(
