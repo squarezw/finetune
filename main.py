@@ -105,6 +105,8 @@ def numerical_preprocess_function(examples):
 tokenized_dataset = dataset.map(numerical_preprocess_function, batched=True)
 
 
+print("Tokenized Dataset:", tokenized_dataset)
+
 # 配置训练参数
 
 output_dir = "./qwen3-7b-finetuned"
@@ -149,6 +151,7 @@ trainer = Trainer(
 
 # 开始训练
 trainer.train()
+print("开始训练")
 
 # 保存模型
 model.save_pretrained(output_dir)
