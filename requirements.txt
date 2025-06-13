@@ -4,4 +4,3 @@ accelerate
 peft
 bitsandbytes
 torch
-bitsandbytes
