@@ -56,3 +56,51 @@ except Exception as e:
     })
     dataset = Dataset.from_pandas(test_data)
     print("使用测试数据继续运行")
+
+
+
+def numerical_preprocess_function(examples):
+    # 将数值特征组合成描述性文本
+    prompts = []
+    for i in range(len(examples["longitude"])):
+        prompt = (
+            "根据以下房屋特征预测房价:\n"
+            f"- 经度: {examples['longitude'][i]}\n"
+            f"- 纬度: {examples['latitude'][i]}\n"
+            f"- 房龄中位数: {examples['housing_median_age'][i]}年\n"
+            f"- 总房间数: {examples['total_rooms'][i]}\n"
+            f"- 总卧室数: {examples['total_bedrooms'][i]}\n"
+            f"- 人口: {examples['population'][i]}\n"
+            f"- 家庭数: {examples['households'][i]}\n"
+            f"- 收入中位数: {examples['median_income'][i]}\n"
+            "预测房价(美元):"
+        )
+        prompts.append(prompt)
+    
+    # 将目标值转换为文本
+    responses = [f"{int(val)}" for val in examples["median_house_value"]]
+    
+    # 标记化
+    model_inputs = tokenizer(
+        prompts,
+        max_length=512,
+        truncation=True,
+        padding="max_length",
+        return_tensors="pt"
+    )
+    
+    # 标记化目标值
+    with tokenizer.as_target_tokenizer():
+        labels = tokenizer(
+            responses,
+            max_length=32,
+            truncation=True,
+            padding="max_length",
+            return_tensors="pt"
+        )
+    
+    model_inputs["labels"] = labels["input_ids"]
+    return model_inputs
+
+# 应用预处理
+tokenized_dataset = dataset.map(numerical_preprocess_function, batched=True)
