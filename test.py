@@ -1,11 +1,15 @@
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
+from peft import PeftModel
 
-model_name = "./qwen3-7b-finetuned"
+# 基础模型和 LoRA adapter 路径
+base_model_name = "Qwen/Qwen1.5-0.5B"
+lora_model_path = "./qwen3-7b-finetuned"
 
-# 加载模型和分词器
-model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto", torch_dtype=torch.float16)
-tokenizer = AutoTokenizer.from_pretrained(model_name)
+# 加载基础模型和 LoRA adapter
+base_model = AutoModelForCausalLM.from_pretrained(base_model_name, device_map="auto", torch_dtype=torch.float16)
+model = PeftModel.from_pretrained(base_model, lora_model_path)
+tokenizer = AutoTokenizer.from_pretrained(lora_model_path)
 
 # # 测试微调后的模型
 # def generate_response(prompt):
@@ -25,7 +29,7 @@ def predict_house_price(features_dict):
     ) + " 预测房价:"
     
     # 生成预测
-    inputs = tokenizer(prompt, return_tensors="pt").to("cuda")
+    inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
     outputs = model.generate(**inputs, max_new_tokens=8)
     
     # 解析输出
