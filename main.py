@@ -13,7 +13,7 @@ print(f"transformers 版本: {transformers.__version__}")
 # 加载模型和分词器
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, TrainingArguments
 
-model_name = "Qwen/Qwen1.5-7B"  # Qwen3 7B 模型
+model_name = "Qwen/Qwen-0.5B"  # Qwen3 7B 模型
 
 # 配置 4-bit 量化以减少内存使用
 bnb_config = BitsAndBytesConfig(
@@ -89,14 +89,21 @@ def numerical_preprocess_function(examples):
     )
     
     # 标记化目标值
-    with tokenizer.as_target_tokenizer():
-        labels = tokenizer(
-            responses,
-            max_length=32,
-            truncation=True,
-            padding="max_length",
-            return_tensors="pt"
-        )
+    # with tokenizer.as_target_tokenizer():
+    #     labels = tokenizer(
+    #         responses,
+    #         max_length=32,
+    #         truncation=True,
+    #         padding="max_length",
+    #         return_tensors="pt"
+    #     )    
+    labels = tokenizer(
+        text_target=responses,
+        max_length=32,
+        truncation=True,
+        padding="max_length",
+        return_tensors="pt"
+    )
     
     model_inputs["labels"] = labels["input_ids"]
     return model_inputs
