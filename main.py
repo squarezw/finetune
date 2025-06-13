@@ -7,12 +7,11 @@ import transformers
 import pandas as pd
 from datasets import Dataset
 
-
 print(f"bitsandbytes 版本: {bitsandbytes.__version__}")
 print(f"transformers 版本: {transformers.__version__}")
 
 # 加载模型和分词器
-from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, TrainingArguments
 
 model_name = "Qwen/Qwen1.5-7B"  # Qwen3 7B 模型
 
@@ -104,3 +103,53 @@ def numerical_preprocess_function(examples):
 
 # 应用预处理
 tokenized_dataset = dataset.map(numerical_preprocess_function, batched=True)
+
+
+# 配置训练参数
+
+output_dir = "./qwen3-7b-finetuned"
+training_args = TrainingArguments(
+    output_dir=output_dir,
+    per_device_train_batch_size=4,
+    gradient_accumulation_steps=4,
+    learning_rate=2e-5,
+    num_train_epochs=3,
+    logging_dir="./logs",
+    logging_steps=10,
+    save_strategy="epoch",
+    evaluation_strategy="no",
+    fp16=True,
+    push_to_hub=False,  # 设置为 True 如果你想上传到 Hugging Face Hub
+)
+
+# 创建训练器并开始微调
+from transformers import Trainer
+from peft import LoraConfig, get_peft_model
+
+# 配置 LoRA
+peft_config = LoraConfig(
+    r=16,
+    lora_alpha=32,
+    lora_dropout=0.05,
+    bias="none",
+    task_type="CAUSAL_LM",
+    target_modules=["q_proj", "k_proj", "v_proj", "o_proj"]
+)
+
+# 应用 LoRA
+model = get_peft_model(model, peft_config)
+model.print_trainable_parameters()
+
+# 创建训练器
+trainer = Trainer(
+    model=model,
+    args=training_args,
+    train_dataset=tokenized_dataset,
+)
+
+# 开始训练
+trainer.train()
+
+# 保存模型
+model.save_pretrained(output_dir)
+tokenizer.save_pretrained(output_dir)
