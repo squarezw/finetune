@@ -44,7 +44,7 @@ def predict_house_price(features_dict):
     # 提取所有数字，取最后一个
     numbers = re.findall(r"([0-9]+)", prediction)
     if numbers:
-        return float(numbers[-1])
+        return float(numbers[-1]) * 10000
     else:
         print(f"解析失败: {prediction}")
         return None
