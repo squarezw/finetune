@@ -38,13 +38,13 @@ def predict_house_price(features_dict):
     )
     print("prompt：", prompt)
     inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
-    outputs = model.generate(**inputs, max_new_tokens=8)
+    outputs = model.generate(**inputs, max_new_tokens=32)
     prediction = tokenizer.decode(outputs[0], skip_special_tokens=True)
     print("模型原始输出：", prediction)
-    # 用正则提取数字
-    match = re.search(r"预测房价.*?([0-9]+)", prediction)
-    if match:
-        return float(match.group(1))
+    # 提取所有数字，取最后一个
+    numbers = re.findall(r"([0-9]+)", prediction)
+    if numbers:
+        return float(numbers[-1])
     else:
         print(f"解析失败: {prediction}")
         return None
