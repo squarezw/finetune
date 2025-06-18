@@ -1,8 +1,3 @@
-# 环境准备
-``` bash
-docker run -it --name ml-env -v "$(pwd)":/workspace -w /workspace pytorch/pytorch:latest bash
-```
-
 # Fine Tune
 
 1. 预训练模型准备
