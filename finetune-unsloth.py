@@ -48,7 +48,7 @@ def extract_xml_answer(text: str) -> str:
 def extract_hash_answer(text: str) -> str | None:
     if '####' not in text:
         return None
-    return text.split("###")[1].strip()
+    return text.split("####")[1].strip()
 
 # 获取 GSM8K 数据集
 def get_gsm8k_questions(split = "train") -> Dataset:
