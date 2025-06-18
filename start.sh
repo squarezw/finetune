@@ -1,1 +1,1 @@
-docker run -itd --name ml-env -v "$(pwd)":/workspace -w /workspace pytorch/pytorch:latest bash
+docker run -itd --name ml-env --gpus all -v "$(pwd)":/workspace -w /workspace pytorch/pytorch:latest bash
