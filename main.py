@@ -72,12 +72,12 @@ def numerical_preprocess_function(examples):
             f"- 人口: {examples['population'][i]}\n"
             f"- 家庭数: {examples['households'][i]}\n"
             f"- 收入中位数: {examples['median_income'][i]}\n"
-            "预测房价(美元):"
+            "预测房价(万元):请只输出数字，单位为万元。"
         )
         prompts.append(prompt)
     
-    # 将目标值转换为文本
-    responses = [f"{int(val)}" for val in examples["median_house_value"]]
+    # 将目标值转换为万元单位的文本
+    responses = [f"{val/10000:.2f}" for val in examples["median_house_value"]]
     
     # 标记化
     model_inputs = tokenizer(
