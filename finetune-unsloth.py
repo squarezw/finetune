@@ -1,3 +1,4 @@
+import re
 from unsloth import FastLanguageModel
 
 # 1. 预训练模型准备
