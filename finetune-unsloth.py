@@ -94,9 +94,84 @@ def soft_format_reward_func(completions, **kwargs) -> list[float]:
     matches = [re.match(pattern, r) for r in responses]
     return [0.5 if match else 0.0 for match in matches]
 
+def count_xml(text) -> float:
+    count = 0.0
+    if text.count("<reasoning>\n") == 1:
+        count += 0.125
+    if text.count("\n</reasoning>\n") == 1:
+        count += 0.125
+    if text.count("\n<answer>\n") == 1:
+        count += 0.125
+        count -= len(text.split("\n</answer>\n")[-1])*0.001
+    if text.count("\n</answer>") == 1:
+        count += 0.125
+        count -= (len(text.split("\n</answer>")[-1]) - 1)*0.001
+    return count
+
+def xmlcount_reward_func(completions, **kwargs) -> list[float]:
+    contents = [completion[0]["content"] for completion in completions]
+    return [count_xml(c) for c in contents]
 
 # 5. 模型微调（训练）
-# model.train(custom_dataset)  # 高效微调
+max_prompt_length = 256
+
+from trl import GRPOConfig, GRPOTrainer
+training_args = GRPOConfig(
+    learning_rate = 5e-6,
+    adam_beta1 = 0.9,
+    adam_beta2 = 0.99,
+    weight_decay = 0.1,
+    warmup_ratio = 0.1,
+    lr_scheduler_type = "cosine",
+    optim = "paged_adamw_8bit",
+    logging_steps = 1,
+    per_device_train_batch_size = 1,
+    gradient_accumulation_steps = 1, # Increase to 4 for smoother training
+    num_generations = 6, # Decrease if out of memory
+    max_prompt_length = max_prompt_length,
+    max_completion_length = max_seq_length - max_prompt_length,
+    # num_train_epochs = 1, # Set to 1 for a full training run
+    max_steps = 250,
+    save_steps = 250,
+    max_grad_norm = 0.1,
+    report_to = "none", # Can use Weights & Biases
+    output_dir = "outputs",
+)
+
+trainer = GRPOTrainer(
+    model = model,
+    processing_class = tokenizer,
+    reward_funcs = [
+        xmlcount_reward_func,
+        soft_format_reward_func,
+        strict_format_reward_func,
+        int_reward_func,
+        correctness_reward_func,
+    ],
+    args = training_args,
+    train_dataset = dataset,
+)
+trainer.train()
+
+# 测试与推理
+
+# text = tokenizer.apply_chat_template([
+#     {"role" : "user", "content" : "Calculate pi."},
+# ], tokenize = False, add_generation_prompt = True)
+
+# from vllm import SamplingParams
+# sampling_params = SamplingParams(
+#     temperature = 0.8,
+#     top_p = 0.95,
+#     max_tokens = 1024,
+# )
+# output = model.fast_generate(
+#     [text],
+#     sampling_params = sampling_params,
+#     lora_request = None,
+# )[0].outputs[0].text
+
+# output
 
 
 

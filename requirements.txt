@@ -4,3 +4,4 @@ datasets>=2.16.0
 peft>=0.7.0
 unsloth>=0.3.0
 pandas>=2.0.0
+trl
