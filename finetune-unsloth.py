@@ -11,12 +11,7 @@ lora_rank = 32 # 更大的秩 = 更智能，但更慢, 选择任何大于 0 的�
 # 3. 加载模型与分词器
 model, tokenizer = FastLanguageModel.from_pretrained(model_name)
 
-tokenizer.chat_template = """<|im_start|>system
-{system_message}<|im_end|>
-<|im_start|>user
-{user_message}<|im_end|>
-<|im_start|>assistant
-"""
+tokenizer.chat_template = """{% for message in messages %}\n<|im_start|>{{ message['role'] }}\n{{ message['content'] }}<|im_end|>\n{% endfor %}"""
 
 # 配置 Peft, 模型参数高效微调
 model = FastLanguageModel.get_peft_model(
