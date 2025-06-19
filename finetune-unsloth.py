@@ -2,7 +2,7 @@ import re
 from unsloth import FastLanguageModel
 
 # 1. 预训练模型准备
-model_name = "Qwen/Qwen3-8B-Base"  # Qwen3 8B 模型
+model_name = "meta-llama/meta-Llama-3.1-8B-Instruct"
 
 # 2. 模型加载与量化参数设置
 max_seq_length = 1024 # 可以增加推理长度
@@ -10,8 +10,6 @@ lora_rank = 32 # 更大的秩 = 更智能，但更慢, 选择任何大于 0 的�
 
 # 3. 加载模型与分词器
 model, tokenizer = FastLanguageModel.from_pretrained(model_name)
-
-tokenizer.chat_template = """{% for message in messages %}\n<|im_start|>{{ message['role'] }}\n{{ message['content'] }}<|im_end|>\n{% endfor %}"""
 
 # 配置 Peft, 模型参数高效微调
 model = FastLanguageModel.get_peft_model(
@@ -57,14 +55,11 @@ def extract_hash_answer(text: str) -> str | None:
 def get_gsm8k_questions(split = "train") -> Dataset:
     data = load_dataset('openai/gsm8k', 'main')[split] # type: ignore
     data = data.map(lambda x: { # type: ignore
-        'prompt': tokenizer.apply_chat_template(
-            [
-                {'role': 'system', 'content': SYSTEM_PROMPT},
-                {'role': 'user', 'content': x['question']}
-            ],
-            tokenize=False,
-            add_generation_prompt=True
-        ),
+        'prompt':
+        [
+            {'role': 'system', 'content': SYSTEM_PROMPT},
+            {'role': 'user', 'content': x['question']}
+        ],
         'answer': extract_hash_answer(x['answer'])
     }) # type: ignore
     return data # type: ignore
