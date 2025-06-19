@@ -2,12 +2,11 @@ version: "3.9"
 
 services:
   finetune:
-    image: nvidia/cuda:12.8.0-cudnn-runtime-ubuntu24.04
+    build: .
     container_name: finetune
     working_dir: /workspace
     volumes:
       - ./:/workspace
-    command: bash -c "apt-get update && apt-get install -y python3-pip && pip3 install --upgrade pip && pip3 install -r requirements.txt && tail -f /dev/null"
     deploy:
       resources:
         reservations:
