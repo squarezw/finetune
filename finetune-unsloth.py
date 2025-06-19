@@ -2,7 +2,7 @@ import re
 from unsloth import FastLanguageModel
 
 # 1. 预训练模型准备
-model_name = "Qwen/Qwen1.5-0.5B"  # Qwen3 7B 模型
+model_name = "Qwen/Qwen3-8B-Base"  # Qwen3 8B 模型
 
 # 2. 模型加载与量化参数设置
 max_seq_length = 1024 # 可以增加推理长度
