@@ -12,9 +12,9 @@ lora_rank = 32 # 更大的秩 = 更智能，但更慢, 选择任何大于 0 的�
 model, tokenizer = FastLanguageModel.from_pretrained(model_name)
 
 tokenizer.chat_template = """<|im_start|>system
-{{ system_message }}<|im_end|>
+{system_message}<|im_end|>
 <|im_start|>user
-{{ user_message }}<|im_end|>
+{user_message}<|im_end|>
 <|im_start|>assistant
 """
 
@@ -62,10 +62,14 @@ def extract_hash_answer(text: str) -> str | None:
 def get_gsm8k_questions(split = "train") -> Dataset:
     data = load_dataset('openai/gsm8k', 'main')[split] # type: ignore
     data = data.map(lambda x: { # type: ignore
-        'prompt': [
-            {'role': 'system', 'content': SYSTEM_PROMPT},
-            {'role': 'user', 'content': x['question']}
-        ],
+        'prompt': tokenizer.apply_chat_template(
+            [
+                {'role': 'system', 'content': SYSTEM_PROMPT},
+                {'role': 'user', 'content': x['question']}
+            ],
+            tokenize=False,
+            add_generation_prompt=True
+        ),
         'answer': extract_hash_answer(x['answer'])
     }) # type: ignore
     return data # type: ignore
@@ -180,7 +184,6 @@ trainer.train()
 # )[0].outputs[0].text
 
 # output
-
 
 
 
