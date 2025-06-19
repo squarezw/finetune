@@ -3,7 +3,6 @@ version: "3.9"
 services:
   finetune:
     build: .
-    container_name: finetune
     working_dir: /workspace
     volumes:
       - ./:/workspace
@@ -16,3 +15,4 @@ services:
               capabilities: [gpu]
     environment:
       - NVIDIA_VISIBLE_DEVICES=all
+    command: ["tail", "-f", "/dev/null"]
